@@ -163,7 +163,7 @@ Follow these steps to configure and enable Google OAuth login:
 
 | Factor | Score | Notes |
 | --- | --- | --- |
-| Video | 3 | Link Updated (https://www.youtube.com/watch?v=HFh_ms9q0As) |
+| Video | 3 | Link Updated (https://www.youtube.com/watch?v=Fp7tj_xCvBc) |
 | Workload | 3 | Distributed |
 | Number of commits | 3 | 50+ |
 | Number of commits: by different people | 3 | https://github.com/CSC510-SE-Fall2024/Team-82_Project-2/graphs/contributors?from=28%2F09%2F2024 |
