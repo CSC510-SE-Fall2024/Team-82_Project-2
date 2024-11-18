@@ -5,7 +5,9 @@ Licensed under the MIT License.
 See the LICENSE file in the project root for the full license information.
 """
 
+import os
 from authlib.integrations.flask_client import OAuth
+from dotenv import load_dotenv
 from flask import Flask, session, render_template, request, redirect, url_for, make_response
 
 from .scraper import driver, filter, get_currency_rate, convert_currency
@@ -16,6 +18,9 @@ import secrets
 from io import StringIO
 import pandas as pd
 
+# Load environment variables from .env file
+load_dotenv()  # This loads the .env file automatically
+
 app = Flask(__name__, template_folder=".")
 
 app.secret_key = Config.SECRET_KEY
@@ -24,8 +29,8 @@ app.secret_key = Config.SECRET_KEY
 oauth = OAuth(app)
 google = oauth.register(
     name='google',
-    client_id='', # Place your OAuth Client ID here
-    client_secret='', # Place your OAuth Client secret here
+    client_id=os.getenv('GOOGLE_CLIENT_ID'), # Fetch client_id from .env
+    client_secret=os.getenv('GOOGLE_CLIENT_SECRET'),  # Fetch client_secret from .env
     authorize_url='https://accounts.google.com/o/oauth2/auth',
     access_token_url='https://accounts.google.com/o/oauth2/token',
     redirect_uri='http://localhost:5000/google/callback',
