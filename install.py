@@ -48,7 +48,7 @@ def main():
     print("   - For Windows Command Prompt: set FLASK_APP=.\src\modules\app")
     print("   - For Windows PowerShell: $Env:FLASK_APP='.\src\modules\app'")
     print("2. Run the application: flask run")
-    print("3. Open your browser and visit: http://127.0.0.1:5000/")
+    print("3. Open your browser and visit: http://localhost:5000/")
     print("\nHappy shopping with Slash!")
 
 if __name__ == "__main__":
