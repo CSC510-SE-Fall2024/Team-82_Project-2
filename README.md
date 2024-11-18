@@ -46,36 +46,32 @@ git clone https://github.com/CSC510-SE-Fall2024/Team-82_Project-2.git
 cd slash
 ```
 
-2. Install the `requirements.txt`.
+2. Run the installation script `install.py`:
 
-- This project uses Python 3, so make sure that [Python](https://www.python.org/downloads/) and [Pip](https://pip.pypa.io/en/stable/installation/) are preinstalled.
-- Install the `requirements.txt` file using pip.
-
-```
-pip3 install -r requirements.txt
-```
-
-3. Running the program
-
-- Set the environmental variable using either of the following commands:
+- Execute the `install.py` script to handle all setup requirements automatically. This includes installing dependencies, setting up environment variables, and ensuring the project is ready to run.
 
 ```
-MAC
-export FLASK_APP=./src/modules/app
-flask run
+python3 install.py
+```
+- The script will prompt you for the following inputs:
+- Google Client ID: Enter your OAuth 2.0 Client ID.
+- Google Client Secret: Enter your OAuth 2.0 Client Secret. This input is handled securely.
 
-Windows Command Prompt
-set FLASK_APP=.\src\modules\app
-flask run
+3. Run the project
 
-Windows Powershell
-$Env:FLASK_APP='.\src\modules\app'
+- After installation, start the Flask application:
+
+```
 flask run
 ```
 
-4. Once flask is running, open your internet browser and type `http://127.0.0.1:5000/` into the search bar.
+4. Access the application
 
-Note: To get the share by email functionality. Please email slash.se24@gmail.com to get the config file.
+- Open your web browser and navigate to:
+
+```
+http://localhost:5000
+```
 
 <p>
  
