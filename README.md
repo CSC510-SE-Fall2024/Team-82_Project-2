@@ -53,9 +53,7 @@ cd slash
 ```
 python3 install.py
 ```
-- The script will prompt you for the following inputs:
--- Google Client ID: Enter your OAuth 2.0 Client ID.
--- Google Client Secret: Enter your OAuth 2.0 Client Secret. This input is handled securely.
+- The script will prompt you for the following inputs: Google Client ID: Enter your OAuth 2.0 Client ID. Google Client Secret: Enter your OAuth 2.0 Client Secret. This input is handled securely.
 
 3. Run the project
 
