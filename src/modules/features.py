@@ -18,7 +18,9 @@ import bcrypt
 
 from . import scraper
 from email.message import EmailMessage
+from .models import db, User
 
+#All db_* prefix functions use sqlite db instead of existing file approach
 
 # path for user profiles and their wish lists
 users_main_dir = Path(__file__).parent.parent / "users"
@@ -43,6 +45,40 @@ def create_user(username, password):
         create_wishlist(username, 'default')
         return True
     
+def db_create_user(username, password):
+    user_dir = usr_dir(username)
+    """Create a new user or authenticate existing user using database."""
+    # Check if user already exists
+    existing_user = User.query.filter_by(username=username).first()
+    
+    if existing_user:
+        # If user exists, verify password
+        return bcrypt.checkpw(
+            password.encode('utf-8'),
+            existing_user.password.encode('utf-8')
+        )
+    
+    # Create new user
+    hashed_password = bcrypt.hashpw(
+        password.encode('utf-8'),
+        bcrypt.gensalt()
+    ).decode('utf-8')
+    
+    new_user = User(
+        username=username,
+        password=hashed_password
+    )
+    
+    # Save to database
+    db.session.add(new_user)
+    db.session.commit()
+    
+    user_dir.mkdir(parents=True, exist_ok=True)
+    # Create default wishlist
+    create_wishlist(username, 'default')
+    
+    return True
+
 def check_user(username, password):
     user_dir = usr_dir(username)
     if os.path.exists(user_dir): # user already exist
@@ -50,7 +86,17 @@ def check_user(username, password):
         if stored_password:
             return bcrypt.checkpw(password.encode('utf-8'), stored_password.encode('utf-8'))
     else: 
-        return False
+        return False        
+    
+def db_check_user(username, password):
+    """Check if the user exists and the password is correct."""
+    user = User.query.filter_by(username=username).first()
+    if user:
+        # Compare the hashed password stored in the database with the password provided by the user
+        if bcrypt.checkpw(password.encode('utf-8'), user.password.encode('utf-8')):
+            return True
+    return False
+
 
 def list_users():
     ls = os.listdir(users_main_dir)

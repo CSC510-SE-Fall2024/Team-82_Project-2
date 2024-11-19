@@ -11,15 +11,17 @@ from dotenv import load_dotenv
 from flask import Flask, session, render_template, request, redirect, url_for, make_response
 
 from .scraper import driver, filter, get_currency_rate, convert_currency
-from .features import create_user, check_user, wishlist_add_item, read_wishlist, wishlist_remove_list, share_wishlist
+from .features import create_user, check_user, db_check_user, db_create_user, wishlist_add_item, read_wishlist, wishlist_remove_list, share_wishlist
 from .config import Config
+from .models import db
 import secrets
 
 from io import StringIO
 import pandas as pd
+from flask_sqlalchemy import SQLAlchemy
 
 # Load environment variables from .env file
-load_dotenv()  # This loads the .env file automatically
+load_dotenv() 
 
 app = Flask(__name__, template_folder=".")
 
@@ -37,6 +39,15 @@ google = oauth.register(
     jwks_uri='https://www.googleapis.com/oauth2/v3/certs',
     client_kwargs={'scope': 'openid profile email'}
 )
+
+# Database configuration
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db.init_app(app)
+# Create the tables
+with app.app_context():
+    db.create_all()
 
 @app.route('/')
 def landingpage():
@@ -58,7 +69,8 @@ def login():
         
         #session['username'] = username
 
-        if check_user(username, password):
+        if db_check_user(username, password):
+            session['username'] = username
             return redirect(url_for('login')), 200
         else:
             return render_template("./static/landing.html", login=False, invalid=True), 401
@@ -71,11 +83,15 @@ def login():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        session['username'] = request.form['username']
-        if create_user(request.form['username'], request.form['password']):
+        username = request.form['username']
+        password = request.form['password']
+        
+        if db_create_user(username, password):
+            session['username'] = username
             return redirect(url_for('login'))
         else:
             return render_template("./static/landing.html", login=False, invalid=True)
+            
     return render_template('./static/login.html')
 
 @app.route('/login/google')
