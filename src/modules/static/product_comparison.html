@@ -1,0 +1,231 @@
+<!-- Copyright (C) Team-77_Project-3
+ 
+Licensed under the MIT License.
+See the LICENSE file in the project root for the full license information. -->
+
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/result.css') }}">
+  <title>Searching</title>
+</head>
+
+<body data-spy="scroll" data-target="#efec-scroll" data-offset="10">
+  <nav id="efec-scroll" class="navbar navbar-expand-md bg-dark navbar-dark fixed-top bg-transparent">
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse justify-content-center" id="collapsibleNavbar">
+      <ul id="ulone" class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" href="login">Home</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="wishlist">Wishlist</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="product_comparison">Product Comparison</a>
+        </li>
+      </ul>
+
+      <img
+        src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/31/France.tv_Slash.svg/1423px-France.tv_Slash.svg.png"
+        alt="" id="logo" class="" width="5%">
+
+      <ul id="ultwu" class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link">Welcome {{ session['username'] }}</a>
+        </li>
+        <li class="nav-item">
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href={{ url_for('logout') }}>Logout</a>
+        </li>
+      </ul>
+    </div>
+    <div>
+      <label class="switch" id="toggle-button">
+        <input type="checkbox">
+        <span class="slider round">
+          <span class="icon" id="moon">&#127770;</span>
+          <span class="icon" id="sun">&#9728;</span>
+        </span>
+      </label>
+    </div>
+  </nav>
+  
+  <div class="container">
+    <div class="conten-title">
+      <h2><img
+          src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/31/France.tv_Slash.svg/1423px-France.tv_Slash.svg.png"
+          alt="logo" width="3%">
+      </h2>
+      <section class="webdesigntuts-workshop">
+        <form action="/search" method="GET">
+          <input type="text" name="product_name" placeholder="What are you looking for?">
+          <button type="submit">Search</button>
+        </form>
+        <br>
+      </section>
+    </div>
+    <br><br><br><br> <br><br><br><br>
+  </div>
+
+  <!-- Product Comparison Section -->
+  <div class="container mt-5 pt-5">
+    <h1>Compare products to get the best deal..</h1>
+    <form id="comparison-form">
+      <div class="search-container">
+        <!-- Search bar and Website selection for Product 1 -->
+        <div class="product-section">
+          <label for="product1">Product 1:</label>
+          <input type="text" id="product1" name="product1" placeholder="Enter Product 1 Name" class="form-control">
+          <label for="website1">Select Website for Product 1:</label>
+          <select id="website1" name="website1" class="form-control">
+            <option value="walmart">Walmart</option>
+            <option value="target">Target</option>
+            <option value="bestbuy">BestBuy</option>
+            <option value="amazon">Amazon</option>
+            <option value="google-shopping">Google Shopping</option>
+            <option value="etsy">Etsy</option>
+            <option value="ebay">eBay</option>
+          </select>
+        </div>
+        <!-- Search bar and Website selection for Product 2 -->
+        <div class="product-section">
+          <label for="product2">Product 2:</label>
+          <input type="text" id="product2" name="product2" placeholder="Enter Product 2 Name" class="form-control">
+          <label for="website2">Select Website for Product 2:</label>
+          <select id="website2" name="website2" class="form-control">
+            <option value="walmart">Walmart</option>
+            <option value="target">Target</option>
+            <option value="bestbuy">BestBuy</option>
+            <option value="amazon">Amazon</option>
+            <option value="google-shopping">Google Shopping</option>
+            <option value="etsy">Etsy</option>
+            <option value="ebay">eBay</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Submit Button -->
+      <div class="submit-container mt-3">
+        <button type="submit" id="compare-button" class="btn btn-primary">Compare</button>
+      </div>
+    </form>
+
+    <!-- Results Section (this will be populated dynamically) -->
+    <div id="comparison-results" class="results-container mt-5">
+      <h2>Comparison Results</h2>
+      <div id="results"></div>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination-container text-center">
+    <!-- Pagination links will be dynamically added -->
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+    integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+    integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4f86dIHNDz0W1" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+    integrity="sha384-jjSmVgyd0p3pXB1rRibZUAYoIIyFuhkn9g9QEXI1bbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+
+    <script>
+        !function (a) { "use strict"; "function" == typeof define && define.amd ? define(["jquery"], a) : a(jQuery) }(function (a) { "use strict"; function b(a) { if (a instanceof Date) return a; if (String(a).match(g)) return String(a).match(/^[0-9]*$/) && (a = Number(a)), String(a).match(/\-/) && (a = String(a).replace(/\-/g, "/")), new Date(a); throw new Error("Couldn't cast `" + a + "` to a date object.") } function c(a) { var b = a.toString().replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1"); return new RegExp(b) } function d(a) { return function (b) { var d = b.match(/%(-|!)?[A-Z]{1}(:[^;]+;)?/gi); if (d) for (var f = 0, g = d.length; f < g; ++f) { var h = d[f].match(/%(-|!)?([a-zA-Z]{1})(:[^;]+;)?/), j = c(h[0]), k = h[1] || "", l = h[3] || "", m = null; h = h[2], i.hasOwnProperty(h) && (m = i[h], m = Number(a[m])), null !== m && ("!" === k && (m = e(l, m)), "" === k && m < 10 && (m = "0" + m.toString()), b = b.replace(j, m.toString())) } return b = b.replace(/%%/, "%") } } function e(a, b) { var c = "s", d = ""; return a && (a = a.replace(/(:|;|\s)/gi, "").split(/\,/), 1 === a.length ? c = a[0] : (d = a[0], c = a[1])), Math.abs(b) > 1 ? c : d } var f = [], g = [], h = { precision: 100, elapse: !1, defer: !1 }; g.push(/^[0-9]*$/.source), g.push(/([0-9]{1,2}\/){2}[0-9]{4}( [0-9]{1,2}(:[0-9]{2}){2})?/.source), g.push(/[0-9]{4}([\/\-][0-9]{1,2}){2}( [0-9]{1,2}(:[0-9]{2}){2})?/.source), g = new RegExp(g.join("|")); var i = { Y: "years", m: "months", n: "daysToMonth", d: "daysToWeek", w: "weeks", W: "weeksToMonth", H: "hours", M: "minutes", S: "seconds", D: "totalDays", I: "totalHours", N: "totalMinutes", T: "totalSeconds" }, j = function (b, c, d) { this.el = b, this.$el = a(b), this.interval = null, this.offset = {}, this.options = a.extend({}, h), this.instanceNumber = f.length, f.push(this), this.$el.data("countdown-instance", this.instanceNumber), d && ("function" == typeof d ? (this.$el.on("update.countdown", d), this.$el.on("stoped.countdown", d), this.$el.on("finish.countdown", d)) : this.options = a.extend({}, h, d)), this.setFinalDate(c), this.options.defer === !1 && this.start() }; a.extend(j.prototype, { start: function () { null !== this.interval && clearInterval(this.interval); var a = this; this.update(), this.interval = setInterval(function () { a.update.call(a) }, this.options.precision) }, stop: function () { clearInterval(this.interval), this.interval = null, this.dispatchEvent("stoped") }, toggle: function () { this.interval ? this.stop() : this.start() }, pause: function () { this.stop() }, resume: function () { this.start() }, remove: function () { this.stop.call(this), f[this.instanceNumber] = null, delete this.$el.data().countdownInstance }, setFinalDate: function (a) { this.finalDate = b(a) }, update: function () { if (0 === this.$el.closest("html").length) return void this.remove(); var b, c = void 0 !== a._data(this.el, "events"), d = new Date; b = this.finalDate.getTime() - d.getTime(), b = Math.ceil(b / 1e3), b = !this.options.elapse && b < 0 ? 0 : Math.abs(b), this.totalSecsLeft !== b && c && (this.totalSecsLeft = b, this.elapsed = d >= this.finalDate, this.offset = { seconds: this.totalSecsLeft % 60, minutes: Math.floor(this.totalSecsLeft / 60) % 60, hours: Math.floor(this.totalSecsLeft / 60 / 60) % 24, days: Math.floor(this.totalSecsLeft / 60 / 60 / 24) % 7, daysToWeek: Math.floor(this.totalSecsLeft / 60 / 60 / 24) % 7, daysToMonth: Math.floor(this.totalSecsLeft / 60 / 60 / 24 % 30.4368), weeks: Math.floor(this.totalSecsLeft / 60 / 60 / 24 / 7), weeksToMonth: Math.floor(this.totalSecsLeft / 60 / 60 / 24 / 7) % 4, months: Math.floor(this.totalSecsLeft / 60 / 60 / 24 / 30.4368), years: Math.abs(this.finalDate.getFullYear() - d.getFullYear()), totalDays: Math.floor(this.totalSecsLeft / 60 / 60 / 24), totalHours: Math.floor(this.totalSecsLeft / 60 / 60), totalMinutes: Math.floor(this.totalSecsLeft / 60), totalSeconds: this.totalSecsLeft }, this.options.elapse || 0 !== this.totalSecsLeft ? this.dispatchEvent("update") : (this.stop(), this.dispatchEvent("finish"))) }, dispatchEvent: function (b) { var c = a.Event(b + ".countdown"); c.finalDate = this.finalDate, c.elapsed = this.elapsed, c.offset = a.extend({}, this.offset), c.strftime = d(this.offset), this.$el.trigger(c) } }), a.fn.countdown = function () { var b = Array.prototype.slice.call(arguments, 0); return this.each(function () { var c = a(this).data("countdown-instance"); if (void 0 !== c) { var d = f[c], e = b[0]; j.prototype.hasOwnProperty(e) ? d[e].apply(d, b.slice(1)) : null === String(e).match(/^[$A-Z_][0-9A-Z_$]*$/i) ? (d.setFinalDate.call(d, e), d.start()) : a.error("Method %s does not exist on jQuery.countdown".replace(/\%s/gi, e)) } else new j(this, b[0], b[1]) }) } });</script>
+    <script>
+        window.onload = function () {
+          if (window.localStorage) {
+            var isDark = window.localStorage.getItem("dark");
+            if (isDark == 'true') {
+              document.body.classList.add("dark-mode");
+              document.getElementById("toggle-button").firstElementChild.checked = true;
+            }
+          }
+        }
+    
+        window.onscroll = function (e) {
+    
+          e.preventDefault();
+    
+          let scroll = window.scrollY;
+    
+          var Scroll = document.querySelector("#efec-scroll");
+          var ulone = document.querySelector("#ulone");
+          var ultwu = document.querySelector("#ultwu");
+          var logo = document.getElementById("logo");
+          var darkModeButton = document.getElementById("toggle-button").firstElementChild;
+    
+          if (scroll > 50) {
+            if (darkModeButton.checked) {
+              Scroll.classList.add("bg-menu-light")
+            } else {
+              Scroll.classList.add("bg-menu");
+            }
+            // ulone.classList.add("nav-scroll");
+            // ultwu.classList.add("nav-scroll");
+            // logo.classList.add("logo");
+          } else {
+            Scroll.classList.remove("bg-menu");
+            Scroll.classList.remove("bg-menu-light");
+            // ulone.classList.remove("nav-scroll");
+            // ultwu.classList.remove("nav-scroll");
+            // logo.classList.remove("logo");
+          }
+        };
+      </script>
+      <script>
+        var darkModeButton = document.getElementById("toggle-button");
+        darkModeButton.addEventListener("click", function () {
+            let scroll = window.scrollY;
+            var Scroll = document.querySelector("#efec-scroll");
+            if (darkModeButton.firstElementChild.checked) {
+                document.body.classList.add("dark-mode");
+                window.localStorage.setItem("dark", true);
+                if (scroll > 50) {
+                    Scroll.classList.remove("bg-menu");
+                    Scroll.classList.add("bg-menu-light");
+                }
+            } else {
+                document.body.classList.remove("dark-mode");
+                window.localStorage.setItem("dark", false);
+                if (scroll > 50) {
+                Scroll.classList.add("bg-menu");
+                Scroll.classList.remove("bg-menu-light");
+                }
+            }
+        })
+    </script>
+
+  <!-- Custom Scripts for Product Comparison -->
+  <script>
+    document.getElementById('comparison-form').addEventListener('submit', function(event) {
+      event.preventDefault();
+
+      const product1 = document.getElementById('product1').value;
+      const website1 = document.getElementById('website1').value;
+      const product2 = document.getElementById('product2').value;
+      const website2 = document.getElementById('website2').value;
+
+      // Placeholder for product comparison logic
+      // Ideally, here you'd make an API request to get the comparison data
+
+      const resultsContainer = document.getElementById('results');
+      resultsContainer.innerHTML = `
+        <h3>Comparison for "${product1}" and "${product2}"</h3>
+        <p>Comparing on websites: ${website1} and ${website2}</p>
+        <p>Results will appear here after API fetch.</p>
+      `;
+    });
+  </script>
+</body>
+</html>

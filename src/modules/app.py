@@ -111,7 +111,7 @@ def google_callback():
         nonce = session.pop('nonce', None)  # Remove the nonce from the session
         user_info = google.parse_id_token(token, nonce=nonce)  # Pass the nonce here
         session['username'] = user_info['email']
-        create_user(session["username"], "")
+        db_create_user(session["username"], "")
         return redirect(url_for('login'))
     except Exception as e:
         return f"Error: {e}"
@@ -251,6 +251,10 @@ def export_csv():
     output.headers["Content-type"] = "text/csv"
     
     return output
+
+@app.route('/product_comparison')
+def product_comparison():
+    return render_template('./static/product_comparison.html')
     
     
 
