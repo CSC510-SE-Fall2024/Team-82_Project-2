@@ -43,7 +43,6 @@ google = oauth.register(
 # Database configuration
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
 db.init_app(app)
 # Create the tables
 with app.app_context():
@@ -60,24 +59,22 @@ def landingpage():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        #session['username'] = request.form['username']
         username = request.form['username']
         password = request.form['password']
 
         if not username or not password:
             return 'Username and Password are required', 400
-        
-        #session['username'] = username
 
         if db_check_user(username, password):
             session['username'] = username
-            return redirect(url_for('login')), 200
+            return redirect(url_for('login'))  # Redirect to another route
         else:
             return render_template("./static/landing.html", login=False, invalid=True), 401
     elif session.get('oauth'):
         # If user is logged in with OAuth
-        return redirect(url_for('login'))
+        return redirect(url_for('login'))  # Redirect to another route
     return render_template('./static/login.html')
+
 
 
 @app.route('/register', methods=['GET', 'POST'])
