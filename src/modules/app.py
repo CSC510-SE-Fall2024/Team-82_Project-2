@@ -9,13 +9,21 @@ import os
 from authlib.integrations.flask_client import OAuth
 from dotenv import load_dotenv
 from flask import Flask, session, render_template, request, redirect, url_for, make_response
-
+import random
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from datetime import datetime, timedelta
 from .scraper import driver, filter, get_currency_rate, convert_currency
 from .features import create_user, check_user, db_check_user, db_create_user, wishlist_add_item, read_wishlist, wishlist_remove_list, share_wishlist
 from .config import Config
 from .models import db
 import secrets
+import email, smtplib, ssl
 
+from email import encoders
+from email.mime.base import MIMEBase
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from io import StringIO
 import pandas as pd
 from flask_sqlalchemy import SQLAlchemy
@@ -26,6 +34,117 @@ load_dotenv()
 app = Flask(__name__, template_folder=".")
 
 app.secret_key = Config.SECRET_KEY
+
+def generate_otp():
+    return str(random.randint(100000, 999999))
+
+def send_otp_email(email, otp):
+    try:
+        sender_email = os.getenv("SENDER_EMAIL")
+        sender_password = os.getenv("SENDER_PASSWORD")
+        receiver_email = email
+
+        # Ensure credentials are available
+        if not sender_email or not sender_password:
+            raise EnvironmentError("SENDER_EMAIL and SENDER_PASSWORD must be set in the environment.")
+
+        subject = 'Secure Login to Slash - Your OTP Code'
+        body = f'''
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body {{
+                    font-family: Arial, sans-serif;
+                    background-color: #f9f9f9;
+                    color: #333;
+                    margin: 0;
+                    padding: 0;
+                }}
+                .container {{
+                    max-width: 600px;
+                    margin: 20px auto;
+                    background: #ffffff;
+                    border: 1px solid #ddd;
+                    border-radius: 8px;
+                    overflow: hidden;
+                    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                }}
+                .header {{
+                    background-color: #4CAF50;
+                    padding: 20px;
+                    text-align: center;
+                    color: white;
+                }}
+                .header img {{
+                    max-width: 100px;
+                }}
+                .content {{
+                    padding: 20px;
+                }}
+                .otp {{
+                    font-size: 24px;
+                    font-weight: bold;
+                    color: #4CAF50;
+                    text-align: center;
+                }}
+                .footer {{
+                    background-color: #f1f1f1;
+                    text-align: center;
+                    padding: 10px;
+                    font-size: 12px;
+                    color: #666;
+                }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>Welcome to Slash</h1>
+                </div>
+                <div class="content">
+                    <p>Dear User,</p>
+                    <p>Your One-Time Password (OTP) for secure login to Slash is:</p>
+                    <div class="otp">{otp}</div>
+                    <p>This OTP is valid for the next 5 minutes. If you did not request this code, please disregard this message.</p>
+                    <p>Thank you for choosing Slash for your smart shopping experience.</p>
+                </div>
+                <div class="footer">
+                    &copy; {2024} Slash. All rights reserved.<br>
+                    <a href="http://localhost:5000" style="color: #4CAF50;">Visit Slash</a>
+                </div>
+            </div>
+        </body>
+        </html>
+        '''
+
+        # Create the email
+        message = MIMEMultipart("alternative")
+        message["From"] = sender_email
+        message["To"] = receiver_email
+        message["Subject"] = subject
+
+        # Attach the HTML email body
+        message.attach(MIMEText(body, "html"))
+
+        # Send the email using a secure SSL context
+        context = ssl.create_default_context()
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
+            server.login(sender_email, sender_password)
+            server.sendmail(sender_email, receiver_email, message.as_string())
+
+        print("Email sent successfully.")
+        return True
+
+    except Exception as e:
+        print(f"Error sending email: {e}")
+        return False
+
+
+
+
+
+
 
 # OAuth Setup
 oauth = OAuth(app)
@@ -66,15 +185,59 @@ def login():
             return 'Username and Password are required', 400
 
         if db_check_user(username, password):
-            session['username'] = username
-            return redirect(url_for('login'))  # Redirect to another route
+            # Generate and send OTP
+            otp = generate_otp()
+            session['login_otp'] = otp
+            session['login_otp_time'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            session['pending_username'] = username
+            
+            if send_otp_email(username, otp):
+                return render_template("./static/landing.html", show_otp=True)
+            else:
+                return 'Error sending OTP email', 500
         else:
             return render_template("./static/landing.html", login=False, invalid=True), 401
+    
     elif session.get('oauth'):
-        # If user is logged in with OAuth
-        return redirect(url_for('login'))  # Redirect to another route
+        return redirect(url_for('login'))
+    
     return render_template('./static/login.html')
 
+
+@app.route('/verify-otp', methods=['POST'])
+def verify_otp():
+    entered_otp = request.form['otp']
+    stored_otp = session.get('login_otp')
+    otp_time = datetime.strptime(session.get('login_otp_time'), '%Y-%m-%d %H:%M:%S')
+    
+    # Check if OTP is expired (5 minutes validity)
+    if datetime.now() - otp_time > timedelta(minutes=5):
+        return render_template("./static/landing.html", otp_error="OTP expired")
+    
+    if entered_otp == stored_otp:
+        # Clear OTP session data
+        session.pop('login_otp', None)
+        session.pop('login_otp_time', None)
+        
+        # Set the actual username in session
+        session['username'] = session.pop('pending_username', None)
+        return redirect(url_for('login'))
+    else:
+        return render_template("./static/landing.html", show_otp=True, otp_error="Invalid OTP")
+
+@app.route('/resend-otp', methods=['POST'])
+def resend_otp():
+    username = session.get('pending_username')
+    if username:
+        otp = generate_otp()
+        session['login_otp'] = otp
+        session['login_otp_time'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        
+        if send_otp_email(username, otp):
+            return render_template("./static/landing.html", show_otp=True, otp_message="New OTP sent")
+        else:
+            return 'Error sending OTP email', 500
+    return 'No pending login', 400
 
 
 @app.route('/register', methods=['GET', 'POST'])

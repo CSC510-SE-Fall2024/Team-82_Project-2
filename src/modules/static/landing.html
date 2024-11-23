@@ -1,98 +1,297 @@
-<!--
-Copyright (C) Team-82_Project-2
-
-Licensed under the MIT License.
-See the LICENSE file in the project root for the full license information.
--->
-
 <!DOCTYPE html>
 <html>
-
 <head>
-  <title>Slash</title>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}">
-</head>
+    <title>Welcome</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+        body, h1, h2, h3, h4, h5, h6 {
+            font-family: "Raleway", Arial, Helvetica, sans-serif
+        }
 
+        .centered-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            text-align: center;
+            background-color: #f8f9fa;
+        }
+
+        .popup {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .popup-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 400px;
+            position: relative;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .close {
+            position: absolute;
+            right: 10px;
+            top: 5px;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        .input-container {
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        .input-container input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-top: 5px;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #666;
+        }
+
+        .w3-section {
+            margin: 15px 0;
+        }
+
+        .google-btn {
+            background-color: #4285f4;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+
+        .google-btn:hover {
+            background-color: #357abd;
+        }
+
+        .otp-input-container {
+            margin: 20px 0;
+        }
+
+        .otp-input-container input {
+            width: 200px;
+            padding: 10px;
+            font-size: 16px;
+            text-align: center;
+            letter-spacing: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin: 0 auto;
+            display: block;
+        }
+
+        .error-message {
+            color: #dc3545;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+
+        .success-message {
+            color: #28a745;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+
+        .otp-note {
+            font-size: 14px;
+            color: #666;
+            margin-top: 15px;
+        }
+
+        .button-container {
+            margin-top: 20px;
+        }
+
+        .button-container button {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .verify-btn {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .resend-btn {
+            background-color: #17a2b8;
+            color: white;
+        }
+
+        .verify-btn:hover {
+            background-color: #218838;
+        }
+
+        .resend-btn:hover {
+            background-color: #138496;
+        }
+    </style>
+</head>
 <body>
 
-  <header>
+<div>
     <div class="centered-container">
-      <span class="w3-jumbo w3-hide-small">SLASH</span><br>
-      <span class="w3-xxlarge w3-hide-large w3-hide-medium">Start something that matters</span><br>
-      <span class="w3-large">"Elevating Your Shopping Experience, All you need is One Comparison."</span>
-      <form method="POST" action="/login">
-        <p><input type="text" name="username" placeholder="Username" class="w3-input w3-border w3-margin-top" required></p>
-        <p class="password-container">
-          <input type="password" name="password" placeholder="Password" class="w3-input w3-border w3-margin-top" required>
-          <span class="toggle-password" onclick="togglePassword()">Show</span>
-        </p>
-        <p><button type="submit" class="w3-input w3-border w3-margin-top">Log in</button></p>
-      </form>
-      <!-- Google Login Button -->
-      <div class="w3-section">
-        <a href="/login/google">
-            <button type="button" class="w3-input w3-border w3-margin-top">Login with Google</button>
-        </a>
-    </div>
-      <p>Don't have an account? <a onclick="document.getElementById('id02').style.display='block'" style="cursor: pointer; font-weight: bold;" class="w3-text-blue w3-hover-text-blue" >Sign up</a></p>
-    </div>
+        <h1 class="w3-jumbo w3-hide-small">SLASH</h1>
+        <h1 class="w3-xxlarge w3-hide-large w3-hide-medium">Start something that matters</h1>
+        <h5 class="w3-large">"Elevating Your Shopping Experience, All you need is One Comparison."</h5>
 
-    {% if invalid %}
+        <!-- Login Form -->
+        <div class="w3-container" style="max-width: 400px; width: 100%;">
+            <form class="w3-container" action="{{ url_for('login') }}" method="post">
+                <div class="input-container">
+                    <input class="w3-input" type="email" name="username" placeholder="Email" required>
+                </div>
+                <div class="input-container">
+                    <input class="w3-input" type="password" name="password" placeholder="Password" required>
+                    <span class="toggle-password" onclick="togglePassword()">Show</span>
+                </div>
+                <button class="w3-button w3-block w3-green w3-section w3-padding" type="submit">Log in</button>
+            </form>
 
-      <div id="errorPopup" class="popup">
-        <div class="popup-content">
-          <span onclick="document.getElementById('errorPopup').style.display='none'" class="close" id="closeError">&times;</span>
-          <p>Invalid Username or Password.</p>
+            <div class="w3-section">
+                <a href="{{ url_for('google_login') }}" class="google-btn">
+                    <i class="fa fa-google"></i>
+                    Login with Google
+                </a>
+            </div>
+
+            <p>Don't have an account? 
+                <span class="w3-text-blue w3-hover-text-blue" 
+                      onclick="document.getElementById('id02').style.display='block'" 
+                      style="cursor: pointer; font-weight: bold;">
+                    Sign up
+                </span>
+            </p>
         </div>
-      </div>
+    </div>
 
+    <!-- Error Popup -->
+    {% if invalid %}
+    <div id="errorPopup" class="popup" style="display: block;">
+        <div class="popup-content">
+            <span id="closeError" class="close" onclick="document.getElementById('errorPopup').style.display='none'">&times;</span>
+            <p>Invalid Username or Password.</p>
+        </div>
+    </div>
     {% endif %}
 
-  </header>
+    <!-- OTP Popup -->
+    {% if show_otp %}
+    <div id="otpPopup" class="popup" style="display: block;">
+        <div class="popup-content">
+            <span id="closeOTP" class="close" onclick="window.location.href='/login'">&times;</span>
+            
+            <h3>Enter OTP</h3>
+            {% if otp_error %}
+            <p class="error-message">{{ otp_error }}</p>
+            {% endif %}
+            {% if otp_message %}
+            <p class="success-message">{{ otp_message }}</p>
+            {% endif %}
 
-  <div id="id02" class="w3-modal">
-    <div class="w3-modal-content w3-card-4 w3-animate-zoom" style="max-width:600px">
-      <div class="w3-center"><br>
-        <span onclick="document.getElementById('id02').style.display='none'"
-          class=" w3-button w3-xlarge w3-transparent w3-display-topright" title="Close Modal">×</span>
-        <img
-          src="https://www.pngitem.com/pimgs/m/137-1370168_professional-clipart-female-avatar-circle-hd-png-download.png"
-          alt="Avatar" style="width:30%" class="w3-circle w3-margin-top">
-      </div>
-      <form class="w3-container" method="POST" action="/register">
-        <div class="w3-section">
-          <label><b>Username</b></label>
-          <input class="w3-input w3-border w3-margin-bottom" type="text" placeholder="Enter Username" name="username"
-            required>
-          <label><b>Password</b></label>
-          <input class="w3-input w3-border w3-margin-bottom" type="password" placeholder="Enter Password" name="password"
-            required>
-          <button class="w3-button w3-block w3-black w3-section w3-padding" type="submit">Register</button>
+            <form action="{{ url_for('verify_otp') }}" method="POST">
+                <div class="otp-input-container">
+                    <input type="text" name="otp" maxlength="6" required placeholder="Enter 6-digit OTP">
+                </div>
+                <div class="button-container">
+                    <button type="submit" class="verify-btn">Verify OTP</button>
+                </div>
+            </form>
+
+            <form action="{{ url_for('resend_otp') }}" method="POST">
+                <div class="button-container">
+                    <button type="submit" class="resend-btn">Resend OTP</button>
+                </div>
+            </form>
+
+            <p class="otp-note">Please check your email for the OTP. It will expire in 5 minutes.</p>
         </div>
-      </form>
     </div>
-  </div>
+    {% endif %}
 
-  </div>
+    <!-- Registration Modal -->
+    <div id="id02" class="w3-modal">
+        <div class="w3-modal-content w3-card-4 w3-animate-zoom" style="max-width:600px">
+            <div class="w3-center">
+                <br>
+                <span onclick="document.getElementById('id02').style.display='none'" 
+                      class="w3-button w3-xlarge w3-transparent w3-display-topright" 
+                      title="Close Modal">&times;</span>
+                <img src="https://www.pngitem.com/pimgs/m/137-1370168_professional-clipart-female-avatar-circle-hd-png-download.png" 
+                     alt="Avatar" class="w3-circle w3-margin-top" style="width:30%">
+            </div>
 
-  <script>
-    function togglePassword() {
-      var passwordInput = document.querySelector('.password-container input');
-      var toggleText = document.querySelector('.toggle-password');
-      if (passwordInput.type === 'password') {
-        passwordInput.type = 'text';
-        toggleText.textContent = 'Hide';
-      } else {
-        passwordInput.type = 'password';
-        toggleText.textContent = 'Show';
-      }
+            <form class="w3-container" action="{{ url_for('register') }}" method="post">
+                <div class="w3-section">
+                    <input class="w3-input w3-border w3-margin-bottom" type="email" name="username" placeholder="Email" required>
+                    <input class="w3-input w3-border" type="password" name="password" placeholder="Password" required>
+                    <button class="w3-button w3-block w3-green w3-section w3-padding" type="submit">Register</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function togglePassword() {
+    const passwordInput = document.querySelector('input[type="password"]');
+    const toggleButton = document.querySelector('.toggle-password');
+    
+    if (passwordInput.type === "password") {
+        passwordInput.type = "text";
+        toggleButton.textContent = "Hide";
+    } else {
+        passwordInput.type = "password";
+        toggleButton.textContent = "Show";
     }
-  </script>
-</body>
+}
+</script>
 
+</body>
 </html>
