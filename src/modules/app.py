@@ -8,13 +8,15 @@ See the LICENSE file in the project root for the full license information.
 import os
 from authlib.integrations.flask_client import OAuth
 from dotenv import load_dotenv
-from flask import Flask, session, render_template, request, redirect, url_for, make_response
+
+from flask import Flask, session, render_template, request, redirect, url_for, make_response, jsonify
 import random
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime, timedelta
+
 from .scraper import driver, filter, get_currency_rate, convert_currency
-from .features import create_user, check_user, db_check_user, db_create_user, wishlist_add_item, read_wishlist, wishlist_remove_list, share_wishlist
+from .features import create_user, check_user, db_check_user, db_create_user, wishlist_add_item, read_wishlist, remove_wishlist_item, share_wishlist
 from .config import Config
 from .models import db
 import secrets
@@ -185,6 +187,7 @@ def login():
             return 'Username and Password are required', 400
 
         if db_check_user(username, password):
+
             # Generate and send OTP
             otp = generate_otp()
             session['login_otp'] = otp
@@ -200,8 +203,8 @@ def login():
     
     elif session.get('oauth'):
         return redirect(url_for('login'))
-    
     return render_template('./static/login.html')
+    
 
 
 @app.route('/verify-otp', methods=['POST'])
@@ -279,11 +282,12 @@ def google_callback():
 
 @app.route('/wishlist')
 def wishlist():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+
     username = session['username']
-    wishlist_name = "default"
-    items = read_wishlist(username, wishlist_name).to_dict('records')
-    print(items)
-    return render_template('./static/wishlist.html', data=items)
+    wishlist_items = read_wishlist(username, "default")  # Assume default wishlist for simplicity
+    return render_template('./static/wishlist.html', data=wishlist_items)
 
 @app.route('/share', methods=['POST'])
 def share():
@@ -354,19 +358,50 @@ def product_search_filtered():
 
 @app.route("/add-wishlist-item", methods=["POST"])
 def add_wishlist_item():
-    username = session['username']
-    item_data = request.form.to_dict()
-    wishlist_name = 'default'
-    wishlist_add_item(username, wishlist_name, item_data)
-    return ""
+    try:
+        username = session['username']
+        item_data = request.form.to_dict()
+        wishlist_name = 'default'
+
+        if 'price' in item_data:
+            price = item_data['price'].replace('$', '').strip()
+            if price == '' or price == 'N/A' or price is None:
+                item_data['price'] = None  
+            else:
+                try:
+                    item_data['price'] = float(price)  
+                except ValueError:
+                    return jsonify(error="Invalid price format"), 400  
+
+        if wishlist_add_item(username, wishlist_name, item_data):
+            return redirect(url_for('wishlist'))
+        else:
+            return "Error adding item", 400
+    except Exception as e:
+        app.logger.error(f"Error adding item: {e}")
+        return jsonify(error=str(e)), 500
+
 
 @app.route("/delete-wishlist-item", methods=["POST"])
-def remove_wishlist_item():
-    username = session['username']
-    index = int(request.form["index"]) 
-    wishlist_name = 'default'
-    wishlist_remove_list(username, wishlist_name, index)
-    return redirect(url_for('wishlist'))
+def delete_wishlist_item():  
+    try:
+        username = session['username']
+        item_id = int(request.form["index"])  
+        wishlist_name = 'default'
+        if remove_wishlist_item(username, wishlist_name, item_id): 
+            return redirect(url_for('wishlist'))
+        else:
+            return "Error removing item", 400
+    except Exception as e:
+        app.logger.error(f"Error removing item: {e}")
+        return jsonify(error=str(e)), 500
+    
+@app.cli.command("init-db")
+def init_db():
+    """Clear existing data and create new tables."""
+    db.drop_all()
+    db.create_all()
+    print("Initialized the database.")
 
 @app.route('/export_csv')
 def export_csv():

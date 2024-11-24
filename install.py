@@ -2,6 +2,21 @@ from getpass import getpass
 import os
 import subprocess
 from dotenv import load_dotenv
+from cryptography.fernet import Fernet
+
+def generate_key():
+    """Generate a key for encryption."""
+    return Fernet.generate_key()
+
+def encrypt_data(data, key):
+    """Encrypt data using the provided key."""
+    fernet = Fernet(key)
+    return fernet.encrypt(data.encode()).decode()
+
+def decrypt_data(data, key):
+    """Decrypt data using the provided key."""
+    fernet = Fernet(key)
+    return fernet.decrypt(data.encode()).decode()
 
 def check_env_credentials():
     """
@@ -26,7 +41,8 @@ def check_env_credentials():
         return True
     return False
 
-def create_env_file(client_id, client_secret, sender_email, sender_password):
+def create_env_file(client_id, client_secret, sender_email, sender_password, encryption_key):
+
     """Creates a .env file to store Google OAuth credentials."""
     # Get the absolute path to the instance folder
     instance_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'instance'))
@@ -37,11 +53,15 @@ def create_env_file(client_id, client_secret, sender_email, sender_password):
     # Define database path
     db_path = os.path.join(instance_path, 'slash.db')
     
+    encrypted_client_secret = encrypt_data(client_secret, encryption_key)
+    
     env_content = f"""# Environment variables for Slash
 GOOGLE_CLIENT_ID={client_id}
-GOOGLE_CLIENT_SECRET={client_secret}
+
+GOOGLE_CLIENT_SECRET={encrypted_client_secret}
 SENDER_EMAIL={sender_email}
 SENDER_PASSWORD={sender_password}
+
 SQLALCHEMY_DATABASE_URI=sqlite:///{db_path}
 SQLALCHEMY_TRACK_MODIFICATIONS=False
 """
@@ -85,7 +105,11 @@ def main():
                 return
 
             # Create .env file
-            create_env_file(client_id, client_secret, sender_email, sender_password)
+
+            encryption_key = generate_key()
+            create_env_file(client_id, client_secret, sender_email, sender_password, encryption_key)
+            print(f"[INFO] Encryption key: {encryption_key.decode()}")
+
     else:
         if not check_env_credentials():
             print("[INFO] OAuth credentials or Email credentials not found. Please enter them now.")
@@ -100,7 +124,11 @@ def main():
                 return
 
             # Create .env file
-            create_env_file(client_id, client_secret, sender_email, sender_password)
+
+            encryption_key = generate_key()
+            create_env_file(client_id, client_secret, sender_email, sender_password, encryption_key)
+            print(f"[INFO] Encryption key: {encryption_key.decode()}")
+
 
     # Step 2: Install dependencies
     install_dependencies()

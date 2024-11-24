@@ -6,10 +6,24 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     password = db.Column(db.String(120), nullable=False)
+    wishlists = db.relationship('Wishlist', backref='user', lazy=True)
+    __tablename__ = 'users'
 
-# Placeholder template for Wishlist - Can be changed
-class WishlistItem(db.Model):
+class Wishlist(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    item_name = db.Column(db.String(200), nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    items = db.relationship('WishlistItem', backref='wishlist', lazy=True)
+    __tablename__ = 'wishlist'
+
+class WishlistItem(db.Model):
+    __tablename__ = 'wishlist_item'
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
     price = db.Column(db.Float, nullable=True)
+    link = db.Column(db.String(300))
+    website = db.Column(db.String(100))
+    rating = db.Column(db.String(10))
+    wishlist_id = db.Column(db.Integer, db.ForeignKey('wishlist.id'), nullable=False)
+    
+    __table_args__ = {'extend_existing': True}
