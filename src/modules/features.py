@@ -15,6 +15,7 @@ import smtplib
 from pathlib import Path
 from .config import Config
 import bcrypt
+from .models import db, WishlistItem, Wishlist, User
 
 from . import scraper
 from email.message import EmailMessage
@@ -103,10 +104,6 @@ def list_users():
     list_of_users = list(filter(lambda u: os.path.isdir(os.path.join(users_main_dir, u)), ls))
     return list_of_users
 
-def create_wishlist(username, wishlist_name):
-    wishlist_path = usr_dir(username) / (wishlist_name + ".csv")
-    open(wishlist_path, "a").close()
-
 def create_credentials(username, password):
     hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
 
@@ -133,76 +130,93 @@ def get_credentials(username):
         return '' 
 
 def list_wishlists(username):
-    user_dir = usr_dir(username)
-    wishlists = list(map(lambda w: w.replace(".csv", ""), os.listdir(user_dir)))
-    return wishlists
+    """Return a list of wishlist names for the user."""
+    user = User.query.filter_by(username=username).first()
+    if user:
+        return [wishlist.name for wishlist in user.wishlists]
+    return []
 
-def delete_wishlist(username, wishlist_name):
-    wishlist_path = usr_dir(username) / (wishlist_name + ".csv")
-    wishlist_path.unlink(missing_ok=True)
+def create_wishlist(username, wishlist_name):
+    """Create a new wishlist for the user."""
+    user = User.query.filter_by(username=username).first()
+    if user:
+        new_wishlist = Wishlist(name=wishlist_name, user_id=user.id)
+        db.session.add(new_wishlist)
+        db.session.commit()
+        return True
+    return False
+
+def remove_wishlist_item(username, wishlist_name, item_id):
+    """Remove an item from a wishlist."""
+    item = WishlistItem.query.get(item_id)
+    if item and item.wishlist.user.username == username:  
+        db.session.delete(item)
+        db.session.commit()
+        return True
+    return False
+
 
 def wishlist_add_item(username, wishlist_name, item_data):
-    if isinstance(item_data, dict):
-        item_data = pd.DataFrame([item_data])
-    wishlist_path = usr_dir(username) / (wishlist_name + ".csv")
-    if os.path.exists(wishlist_path) and (os.path.getsize(wishlist_path) > 0 ):
-        old_data = pd.read_csv(wishlist_path)
-    else:
-        old_data = pd.DataFrame()
-    #if self.df.title[indx] not in old_data:
-    final_data = pd.concat([old_data, item_data])
-    final_data.to_csv(wishlist_path, index=False, header=item_data.columns)
+    user = User.query.filter_by(username=username).first()
+    wishlist = Wishlist.query.filter_by(user_id=user.id, name=wishlist_name).first()
+    if not wishlist:
+        return False  
+
+    price = item_data.get('price')
+    if isinstance(price, str) and (price.upper() == 'N/A' or price == ''):
+        item_data['price'] = None
+    elif price is not None:
+        try:
+            item_data['price'] = float(price)
+        except ValueError:
+            item_data['price'] = None  
+
+    new_item = WishlistItem(
+        wishlist_id=wishlist.id,
+        title=item_data['title'],
+        price=item_data['price'],
+        link=item_data.get('link'),
+        website=item_data.get('website'),
+        rating=item_data.get('rating')
+    )
+    db.session.add(new_item)
+    db.session.commit()
+    return True
+
 
 def read_wishlist(username, wishlist_name):
-    wishlist_path = usr_dir(username) / (wishlist_name + ".csv")
-    if os.path.exists(wishlist_path):
-        try:
-            csv = pd.read_csv(wishlist_path)
-            for index,obj in csv.iterrows():
-                new_price = update_price(obj['link'],obj['website'],obj['price'])
-                csv.at[index, 'price'] = new_price
-            return csv
-        except Exception:
-            return pd.DataFrame()
-    else:
-        return None # wishlist not found
+    """Read all items from a specific wishlist."""
+    user = User.query.filter_by(username=username).first()
+    wishlist = Wishlist.query.filter_by(user_id=user.id, name=wishlist_name).first()
+    if wishlist:
+        return [{'title': item.title, 'price': item.price, 'link': item.link, 'website': item.website, 'rating': item.rating} for item in wishlist.items]
+    return []
 
 def share_wishlist(username, wishlist_name, email_receiver):
-    wishlist_path = usr_dir(username) / (wishlist_name + ".csv")
-    if os.path.exists(wishlist_path):
+    """Share wishlist via email."""
+    items = read_wishlist(username, wishlist_name)
+    if items:
         try:
-            email_sender = 'slash.se23@gmail.com'
-            email_password = Config.EMAIL_PASS
+            email_sender = current_app.config['MAIL_USERNAME']
+            email_password = current_app.config['MAIL_PASSWORD']
+            subject = f"{username}'s Wishlist"
+            body = "\n".join([f"{i+1}. {item['title']} - {item['link']}" for i, item in enumerate(items)])
 
-            subject = ' slash wishlist of ' + username
+            message = EmailMessage()
+            message.set_content(body)
+            message['Subject'] = subject
+            message['From'] = email_sender
+            message['To'] = email_receiver
 
-            df = pd.read_csv(wishlist_path)
-            links_list = df['link'].astype(str).str.cat(sep=' ')
-            body = "\n".join([f"{i}. {link}" for i, link in enumerate(links_list.split(), start=1)])
-
-            em = EmailMessage()
-            em['from'] = email_sender
-            em['to'] = email_receiver
-            em['subject'] = subject
-            em.set_content(body)
-            
-
-            context = ssl.create_default_context()
-
-            with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as smtp:
-                smtp.login(email_sender, email_password)
-                smtp.sendmail(email_sender, email_receiver, em.as_string())
-
-        except Exception:
-            return 'failed to send email'
-    else:
-        return None # wishlist not found
-
-def wishlist_remove_list(username, wishlist_name, indx):
-    wishlist_path = usr_dir(username) / (wishlist_name + ".csv")
-    old_data = read_wishlist(username, wishlist_name)
-    old_data = old_data.drop(index=indx)
-    old_data.to_csv(wishlist_path, index=False, header=old_data.columns)
+            server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+            server.login(email_sender, email_password)
+            server.send_message(message)
+            server.quit()
+            return True
+        except Exception as e:
+            print(f"Failed to send email: {e}")
+            return False
+    return False
 
 def find_currency(price):
     currency = re.match(r'^[a-zA-Z]{3,5}', price)
