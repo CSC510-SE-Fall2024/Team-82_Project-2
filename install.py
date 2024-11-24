@@ -33,13 +33,16 @@ def check_env_credentials():
     client_id = os.getenv('GOOGLE_CLIENT_ID')
     client_secret = os.getenv('GOOGLE_CLIENT_SECRET')
     db_uri = os.getenv('SQLALCHEMY_DATABASE_URI')
+    sender_email = os.getenv('SENDER_EMAIL')
+    sender_password = os.getenv('SENDER_PASSWORD')
     
-    if client_id and client_secret and db_uri:
+    if client_id and client_secret and db_uri and sender_email and sender_password:
         print("[INFO] Required credentials already exist in .env file.")
         return True
     return False
 
-def create_env_file(client_id, client_secret, encryption_key):
+def create_env_file(client_id, client_secret, sender_email, sender_password, encryption_key):
+
     """Creates a .env file to store Google OAuth credentials."""
     # Get the absolute path to the instance folder
     instance_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'instance'))
@@ -54,7 +57,11 @@ def create_env_file(client_id, client_secret, encryption_key):
     
     env_content = f"""# Environment variables for Slash
 GOOGLE_CLIENT_ID={client_id}
+
 GOOGLE_CLIENT_SECRET={encrypted_client_secret}
+SENDER_EMAIL={sender_email}
+SENDER_PASSWORD={sender_password}
+
 SQLALCHEMY_DATABASE_URI=sqlite:///{db_path}
 SQLALCHEMY_TRACK_MODIFICATIONS=False
 """
@@ -86,34 +93,42 @@ def main():
         print("[INFO] .env file recreated.")
         # Proceed to collect OAuth credentials
         if not check_env_credentials():
-            print("[INFO] OAuth credentials not found. Please enter them now.")
+            print("[INFO] OAuth credentials or Email credentials not found. Please enter them now.")
             client_id = input("Enter your Google Client ID: ").strip()
             client_secret = getpass("Enter your Google Client Secret: ").strip()
+            sender_email = input("Enter your Google Email ID: ").strip()
+            sender_password = getpass("Enter your Google Email Password: ")
 
             # Validate input
-            if not client_id or not client_secret:
+            if not client_id or not client_secret or not sender_email or not sender_password:
                 print("[ERROR] Both Client ID and Client Secret are required. Exiting...")
                 return
 
             # Create .env file
+
             encryption_key = generate_key()
-            create_env_file(client_id, client_secret, encryption_key)
+            create_env_file(client_id, client_secret, sender_email, sender_password, encryption_key)
             print(f"[INFO] Encryption key: {encryption_key.decode()}")
+
     else:
         if not check_env_credentials():
-            print("[INFO] OAuth credentials not found. Please enter them now.")
+            print("[INFO] OAuth credentials or Email credentials not found. Please enter them now.")
             client_id = input("Enter your Google Client ID: ").strip()
             client_secret = getpass("Enter your Google Client Secret: ").strip()
+            sender_email = input("Enter your Google Email ID: ").strip()
+            sender_password = getpass("Enter your Google Email Password: ")
 
             # Validate input
-            if not client_id or not client_secret:
+            if not client_id or not client_secret or not sender_email or not sender_password:
                 print("[ERROR] Both Client ID and Client Secret are required. Exiting...")
                 return
 
             # Create .env file
+
             encryption_key = generate_key()
-            create_env_file(client_id, client_secret, encryption_key)
+            create_env_file(client_id, client_secret, sender_email, sender_password, encryption_key)
             print(f"[INFO] Encryption key: {encryption_key.decode()}")
+
 
     # Step 2: Install dependencies
     install_dependencies()
