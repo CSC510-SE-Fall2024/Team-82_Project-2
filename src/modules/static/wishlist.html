@@ -1,193 +1,513 @@
+<!--
+Copyright (C) Team-82_Project-2
+
+Licensed under the MIT License.
+See the LICENSE file in the project root for the full license information.
+-->
+
 <!doctype html>
 <html lang="en">
+
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
-        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <title>Wishlist</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
-    <style>
-        body {
-            background-color: #121212;
-            color: #e1e1e1;
-        }
-        .table {
-            background-color: #333;
-            border-collapse: separate;
-            border-spacing: 0 15px;
-        }
-        th, td {
-            vertical-align: middle;
-            border: none;
-        }
-        th {
-            color: #f7c6c5;
-        }
-        td {
-            background-color: #424242;
-            color: #f8f9fa;
-        }
-        a, a:hover {
-            color: #8cd5cd;
-        }
-        .btn-danger {
-            background-color: #d9534f;
-            border-color: #d43f3a;
-        }
-        .btn-back {
-            background-color: #6c757d;
-            color: white;
-            border: none;
-            margin-top: 20px;
-        }
-        .btn-back:hover {
-            background-color: #5a6268;
-            color: white;
-        }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/result.css') }}">
+  <title>Slash</title>
 </head>
+
 <body data-spy="scroll" data-target="#efec-scroll" data-offset="10">
-    <nav id="efec-scroll" class="navbar navbar-expand-md bg-dark navbar-dark fixed-top bg-transparent">
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse justify-content-center" id="collapsibleNavbar">
-            <ul id="ulone" class="navbar-nav">
-                <li class="nav-item">
-                    <a class="nav-link" href="login">Home</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="wishlist">Wishlist</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="product_comparison">Product Comparison</a>
-                </li>
-            </ul>
+  <nav id="efec-scroll" class="navbar navbar-expand-md bg-dark navbar-dark fixed-top bg-transparent">
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse justify-content-center" id="collapsibleNavbar">
+      <ul id="ulone" class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" href="login">Home</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="wishlist">Wishlist</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="product_comparison">Product Comparison</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="search-history">Search History</a>
+      </li>
+      </ul>
 
-            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/31/France.tv_Slash.svg/1423px-France.tv_Slash.svg.png"
-                alt="" id="logo" class="" width="5%">
+      <img
+        src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/31/France.tv_Slash.svg/1423px-France.tv_Slash.svg.png"
+        alt="" id="logo" class="" width="5%">
 
-            <ul id="ultwu" class="navbar-nav">
-                <li class="nav-item">
-                    <a class="nav-link">Welcome {{ session['username'] }}</a>
-                </li>
-                <li class="nav-item">
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href={{ url_for('logout') }}>Logout</a>
-                </li>
-            </ul>
-        </div>
-        <div>
-            <label class="switch" id="toggle-button">
-                <input type="checkbox">
-                <span class="slider round">
-                    <span class="icon" id="moon">&#127770;</span>
-                    <span class="icon" id="sun">&#9728;</span>
-                </span>
-            </label>
-        </div>
-    </nav>
-    
-    <div class="container mt-5" style="padding-top: 70px;">
-        <h2 class="mb-3">Your Wishlist</h2>
-        {% if data %}
-        <table class="table table-hover">
-            <thead>
-                <tr>
-                    <th scope="col">#</th>
-                    <th scope="col">Title</th>
-                    <th scope="col">Price</th>
-                    <th scope="col">Website</th>
-                    <th scope="col">Rating</th>
-                    <th scope="col">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for product in data %}
-                <tr>
-                    <th scope="row">{{ loop.index }}</th>
-                    <td><a href="{{ product.link }}" target="_blank">{{ product.title }}</a></td>
-                    <td>${{ product.price }}</td>
-                    <td>{{ product.website }}</td>
-                    <td>{{ product.rating }}</td>
-                    <td>
-                        <button class="btn btn-danger" onclick="deleteItem({{ loop.index0 }})">Delete</button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        {% else %}
-        <div class="alert alert-info" role="alert">
-            Your wishlist is empty.
-        </div>
-        {% endif %}
+      <ul id="ultwu" class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link">Welcome {{ session['username'] }}</a>
+        </li>
+        <li class="nav-item">
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href={{ url_for('logout') }}>Logout</a>
+        </li>
+      </ul>
     </div>
+    <div>
+      <label class="switch" id="toggle-button">
+        <input type="checkbox">
+        <span class="slider round">
+          <span class="icon" id="moon">&#127770;</span>
+          <span class="icon" id="sun">&#9728;</span>
+        </span>
+      </label>
+    </div>
+  </nav>
+  
+  <div class="container">
+    <div class="conten-title">
+      <h2><img
+          src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/31/France.tv_Slash.svg/1423px-France.tv_Slash.svg.png"
+          alt="logo" width="3%">
+      </h2>
+      <section class="webdesigntuts-workshop">
+        <form action="/search" method="GET">
+          <input id="searchInput" type="text" name="product_name" 
+            value="{{ request.args.get('product_name', '') }}"
+            placeholder="What are you looking for?">
+          <button id="performSearchBtn" type="submit">Search</button>
+          <button type="button" id="voiceSearchBtn" class="btn btn-secondary">
+                            🎤
+          </button>
+        </form>
+        <p id="transcription" class="mt-2"></p>
+        <br>
+      </section>
+    </div>
+    <br><br><br><br> <br><br><br><br>
+  </div>
+  <div>
+    <a href="{{ url_for('export_csv', product_name=prod, sort=request.form.get('sort'),
+     currency=request.form.get('currency'), min_price=request.form.get('min_price'),
+      max_price=request.form.get('max_price'), min_rating=request.form.get('min_rating')) }}" 
+   style="position: fixed; right: 20px; top: 60px; z-index: 1000; background-color: #347e37;
+    border: none; color: white; padding: 15px 20px; text-align: center; text-decoration: none;
+     display: inline-block; font-size: 16px; margin: 4px 2px; cursor: pointer;">
+   Export to CSV
+</a>
+  </div>
+  <div class="container" id="abc">
+    <div class="row gx-3 align-items-end">
+      <div class="col-sm">
+        <form action="/filter?product_name={{prod}}" method="post" id="filter1" class="d-flex justify-content-between">
+          <div class="form-group">
+            <label class="control-label" for="company"></label>
+            <select id="choice1" name="sort" class="form-control">
+              <option value="default">Sort By</option>
+              <option value="rades">Rating High to Low</option>
+              <option value="raasc">Rating Low to High</option>
+              <option value="pasc">Price Low to High</option>
+              <option value="pdes">Price High to Low</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="control-label" for="company"></label>
+            <select id="choice1" name="currency" class="form-control" onchange="changeCurrency()">
+              <option id="USD" value="USD">USD</option>
+              <option id="INR" value="INR">INR</option>
+              <option id="EUR" value="EUR">EUR</option>
+              <option id="CNY" value="CNY">CNY</option>
+              <option id="AUD" value="AUD">AUD</option>
+              <option id="GBP" value="GBP">GBP</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="control-label" for="company"></label>
+            <select id="website-choice" name="website" class="form-control">
+              <option value="all">all</option>
+              <option value="walmart">walmart</option>
+              <option value="bestbuy">bestbuy</option>
+              <option value="ebay">ebay</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="control-label" for="company"></label>
+            <input type="number" step="0.1" min="0" id="amount_min" name="min_rating" placeholder="Min Rating"
+              class="form-control" style="border-radius: 7px; height: 44px;">
+          </div>
+          <div class="form-group">
+            <label class="control-label" for="company"></label>
+            <input type="number" step="0.01" min="0" id="amount_min" name="min_price" placeholder="Min Price"
+              class="form-control" style="border-radius: 7px; height: 44px;">
+          </div>
+          <div class="form-group">
+            <label class="control-label" for="company"></label>
+            <input type="number" step="0.01" min="0" id="amount_max" name="max_price" placeholder="Max Price"
+              class="form-control" style="border-radius: 7px; height: 44px;">
+          </div>
+          <div class="form-group">
+            <label class="control-label" for="company"></label>
+            <input type="submit" style="border-radius: 7px; height: 34px;" class="button button1" value="Go" />
+          </div>
+        </form>
+      </div>
+    </div>
+    <hr>
+  </div>
+  <br>
+  <script>
+    var a = []
+  </script>
+  {% for product in data %}
+  <script>
+    var jsonData = '{{ product | tojson | safe }}';
+    try {
+      j = JSON.parse(jsonData)
+      a.push(j)
+    } catch (error) {
 
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-    <script>
-        function deleteItem(index) {
-            const form = document.createElement('form');
-            form.method = 'post';
-            form.action = '/delete-wishlist-item';
-            const inputIndex = document.createElement('input');
-            inputIndex.type = 'hidden';
-            inputIndex.name = 'index';
-            inputIndex.value = index;
-            form.appendChild(inputIndex);
-            document.body.appendChild(form);
-            form.submit();
+    }
+  </script>
+  {% endfor %}
+  <div class="grid">
+  </div>
+
+  <!-- pagination links section-->
+  <div class="pagination-container">
+    {% for page_num in range(1, total_pages + 1) %}
+    <a href="#" class="pagination-link" data-page="{{ page_num }}">{{ page_num }}</a>
+    {% endfor %}
+  </div>
+
+  <script>
+    function getTemplate() {
+      return tempelate = `
+     <div class="card-img-holder">
+         <img class="card-img" src="">
+     </div>
+     <div class="card-content">
+         <span class="card-website"></span>
+         <h4 class="card-price"></h4>
+         <p class="card-title"></p>
+         <div class="card-bottom">
+             <div class="card-rating">Rating:</div>
+             <div class="card-buttons">
+                 <a href="" target="_blank"><i class="fa fa-link"></i></a>
+                 <a href="#/" id="heart-link"><i class="fa fa-heart"></i></a>
+             </div>
+         </div>
+     </div>`;
+    }
+
+    // Pagination logic
+    var itemsPerPage = 20;
+    var totalPages = Math.ceil(a.length / itemsPerPage);
+    var currentPage = 1;
+    var grid = document.querySelector(".grid")
+    // Function to find the cheapest product in the data array
+    function findCheapestProduct() {
+      if (a.length === 0) {
+        return null;
+      }
+
+      let cheapestProduct = a[0];
+      for (let i = 1; i < a.length; i++) {
+        const currentPrice = parseFloat(a[i].price.replace('$', '').replace(',', ''));
+        const cheapestPrice = parseFloat(cheapestProduct.price.replace('$', '').replace(',', ''));
+
+        if (currentPrice < cheapestPrice) {
+          cheapestProduct = a[i];
         }
+      }
 
-        // Add the dark mode toggle functionality
-        window.onscroll = function (e) {
-            e.preventDefault();
-            let scroll = window.scrollY;
-            var Scroll = document.querySelector("#efec-scroll");
-            var ulone = document.querySelector("#ulone");
-            var ultwu = document.querySelector("#ultwu");
-            var logo = document.getElementById("logo");
+      return cheapestProduct;
+    }
 
-            if (scroll > 300) {
-                Scroll.classList.add("bg-menu");
-                ulone.classList.add("nav-scroll");
-                ultwu.classList.add("nav-scroll");
-                logo.classList.add("logo");
-            } else {
-                Scroll.classList.remove("bg-menu");
-                ulone.classList.remove("nav-scroll");
-                ultwu.classList.remove("nav-scroll");
-                logo.classList.remove("logo");
-            }
-        };
+    // Function to display the cheapest product in a separate div
+    function displayCheapestProduct() {
+      let cheapestProduct = findCheapestProduct();
 
-        var darkModeButton = document.getElementById("toggle-button");
-        if(window.localStorage) {
-            if(localStorage.getItem("dark") == "true") {
-                document.body.classList.add("dark-mode");
-                darkModeButton.firstElementChild.checked = true;
-            } else {
-                document.body.classList.remove("dark-mode");
-                darkModeButton.firstElementChild.checked = false;
-            }
-        }
-        
-        darkModeButton.addEventListener("click", function () {
-            if (darkModeButton.firstElementChild.checked) {
-                if (window.localStorage) {
-                    localStorage.setItem("dark", true);
-                }
-                document.body.classList.add("dark-mode");
-            } else {
-                document.body.classList.remove("dark-mode");
-                localStorage.setItem("dark", false);
-            }
+      if (cheapestProduct) {
+        let template = getTemplate();
+        let wrapper = document.createElement("div");
+        wrapper.setAttribute("class", "card-wrapper cheapest-product");
+
+        // Populate template with data for the cheapest product
+        template = template.replace('<img class="card-img" src="">', `<img class="card-img" src="${cheapestProduct.img_link}">`);
+        template = template.replace('<span class="card-website"></span>', `<span class="card-website">Cheapest Product:${cheapestProduct.website}</span>`);
+        template = template.replace('<h4 class="card-price"></h4>', `<h4 class="card-price">${cheapestProduct.price}</h4>`);
+        template = template.replace('<p class="card-title"></p>', `<p class="card-title">${cheapestProduct.title}</p>`);
+        template = template.replace('Rating:</div>', `Rating: ${cheapestProduct.rating}</div>`);
+        template = template.replace('<a href="" target="_blank"><i class="fa fa-link"></i></a>', `<a href="${cheapestProduct.link}" target="_blank"><i class="fa fa-link"></i></a>`);
+        // template = template.replace('<a href="#/" id="heart-link"><i class="fa fa-heart"></i></a>', '');
+
+
+        wrapper.innerHTML = template;
+
+        wrapper.querySelector("#heart-link").addEventListener("click", function (e) {
+          e.preventDefault();
+          addToCart(wrapper, cheapestProduct, e);
+        })
+
+        // Create a new div for the cheapest product and append the card to it
+        let cheapestProductDiv = document.createElement("div");
+        cheapestProductDiv.setAttribute("class", "cheapest-product-container");
+        cheapestProductDiv.style.backgroundColor = "green";
+        cheapestProductDiv.appendChild(wrapper);
+
+        // Insert the new div with the cheapest product at the top of the grid
+        grid.insertBefore(cheapestProductDiv, grid.firstChild);
+      }
+    }
+
+    function showPage(page) {
+      var startIndex = (page - 1) * itemsPerPage;
+      var endIndex = startIndex + itemsPerPage;
+      var currentPageData = a.slice(startIndex, endIndex);
+
+      // Clear existing content
+      grid.innerHTML = "";
+
+      displayCheapestProduct();
+
+      // Your existing code to display the products...
+      for (i = 0; i < currentPageData.length; i++) {
+        let tempelate = getTemplate();
+        let wrapper = document.createElement("div");
+        let data = currentPageData[i];
+        wrapper.setAttribute("class", "card-wrapper");
+        wrapper.innerHTML = tempelate;
+        wrapper.querySelector(".card-img").setAttribute("src", currentPageData[i].img_link);
+        wrapper.querySelector(".card-website").innerHTML = currentPageData[i].website;
+        wrapper.querySelector(".card-rating").innerHTML = "Rating: " + currentPageData[i].rating;
+        wrapper.querySelector(".card-buttons").firstElementChild.setAttribute("href", currentPageData[i].link);
+        wrapper.querySelector(".card-title").innerHTML = currentPageData[i].title;
+        wrapper.querySelector(".card-price").innerHTML = currentPageData[i].price;
+        wrapper.querySelector("#heart-link").addEventListener("click", function (e) {
+          e.preventDefault();
+          addToCart(wrapper, data, e);
         });
-    </script>
+        grid.append(wrapper);
+      }
+
+      // Update pagination links styling
+      document.querySelectorAll(".pagination-link").forEach(function (link) {
+        link.classList.remove("active");
+      });
+      document.querySelector(`.pagination-link[data-page="${page}"]`).classList.add("active");
+    }
+
+    // Show the first page on initial load
+    showPage(currentPage);
+
+    // Handle pagination link clicks
+    document.querySelectorAll(".pagination-link").forEach(function (link) {
+      link.addEventListener("click", function (event) {
+        event.preventDefault();
+        currentPage = parseInt(this.getAttribute("data-page"), 10);
+        showPage(currentPage);
+      });
+    });
+
+  </script>
+    <script>
+    // Get the search input element
+    const searchInput = document.getElementById('searchInput');
+    
+    // Get the product name from URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const productName = urlParams.get('product_name');
+    
+    // If there's a product name in the URL, set it as the input value
+    if (productName) {
+      searchInput.value = decodeURIComponent(productName);
+    }
+    
+    // When the input is focused, only clear if it's the placeholder text
+    searchInput.addEventListener('focus', function() {
+      if (this.value === "What are you looking for?") {
+        this.value = '';
+      }
+    });
+    
+    // When the input loses focus, restore placeholder if empty
+    searchInput.addEventListener('blur', function() {
+      if (this.value === '') {
+        this.value = "What are you looking for?";
+      }
+    });
+  </script>
+  <div class="col-md-4"></div>
+  </div>
+
+  </header>
+
+  <!-- <script type="text/javascript" src="{{ url_for('static', filename='grid.js') }}"></script> -->
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+    integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+    crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+    integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+    crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+    integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+    crossorigin="anonymous"></script>
+
+  <script>
+    !function (a) { "use strict"; "function" == typeof define && define.amd ? define(["jquery"], a) : a(jQuery) }(function (a) { "use strict"; function b(a) { if (a instanceof Date) return a; if (String(a).match(g)) return String(a).match(/^[0-9]*$/) && (a = Number(a)), String(a).match(/\-/) && (a = String(a).replace(/\-/g, "/")), new Date(a); throw new Error("Couldn't cast `" + a + "` to a date object.") } function c(a) { var b = a.toString().replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1"); return new RegExp(b) } function d(a) { return function (b) { var d = b.match(/%(-|!)?[A-Z]{1}(:[^;]+;)?/gi); if (d) for (var f = 0, g = d.length; f < g; ++f) { var h = d[f].match(/%(-|!)?([a-zA-Z]{1})(:[^;]+;)?/), j = c(h[0]), k = h[1] || "", l = h[3] || "", m = null; h = h[2], i.hasOwnProperty(h) && (m = i[h], m = Number(a[m])), null !== m && ("!" === k && (m = e(l, m)), "" === k && m < 10 && (m = "0" + m.toString()), b = b.replace(j, m.toString())) } return b = b.replace(/%%/, "%") } } function e(a, b) { var c = "s", d = ""; return a && (a = a.replace(/(:|;|\s)/gi, "").split(/\,/), 1 === a.length ? c = a[0] : (d = a[0], c = a[1])), Math.abs(b) > 1 ? c : d } var f = [], g = [], h = { precision: 100, elapse: !1, defer: !1 }; g.push(/^[0-9]*$/.source), g.push(/([0-9]{1,2}\/){2}[0-9]{4}( [0-9]{1,2}(:[0-9]{2}){2})?/.source), g.push(/[0-9]{4}([\/\-][0-9]{1,2}){2}( [0-9]{1,2}(:[0-9]{2}){2})?/.source), g = new RegExp(g.join("|")); var i = { Y: "years", m: "months", n: "daysToMonth", d: "daysToWeek", w: "weeks", W: "weeksToMonth", H: "hours", M: "minutes", S: "seconds", D: "totalDays", I: "totalHours", N: "totalMinutes", T: "totalSeconds" }, j = function (b, c, d) { this.el = b, this.$el = a(b), this.interval = null, this.offset = {}, this.options = a.extend({}, h), this.instanceNumber = f.length, f.push(this), this.$el.data("countdown-instance", this.instanceNumber), d && ("function" == typeof d ? (this.$el.on("update.countdown", d), this.$el.on("stoped.countdown", d), this.$el.on("finish.countdown", d)) : this.options = a.extend({}, h, d)), this.setFinalDate(c), this.options.defer === !1 && this.start() }; a.extend(j.prototype, { start: function () { null !== this.interval && clearInterval(this.interval); var a = this; this.update(), this.interval = setInterval(function () { a.update.call(a) }, this.options.precision) }, stop: function () { clearInterval(this.interval), this.interval = null, this.dispatchEvent("stoped") }, toggle: function () { this.interval ? this.stop() : this.start() }, pause: function () { this.stop() }, resume: function () { this.start() }, remove: function () { this.stop.call(this), f[this.instanceNumber] = null, delete this.$el.data().countdownInstance }, setFinalDate: function (a) { this.finalDate = b(a) }, update: function () { if (0 === this.$el.closest("html").length) return void this.remove(); var b, c = void 0 !== a._data(this.el, "events"), d = new Date; b = this.finalDate.getTime() - d.getTime(), b = Math.ceil(b / 1e3), b = !this.options.elapse && b < 0 ? 0 : Math.abs(b), this.totalSecsLeft !== b && c && (this.totalSecsLeft = b, this.elapsed = d >= this.finalDate, this.offset = { seconds: this.totalSecsLeft % 60, minutes: Math.floor(this.totalSecsLeft / 60) % 60, hours: Math.floor(this.totalSecsLeft / 60 / 60) % 24, days: Math.floor(this.totalSecsLeft / 60 / 60 / 24) % 7, daysToWeek: Math.floor(this.totalSecsLeft / 60 / 60 / 24) % 7, daysToMonth: Math.floor(this.totalSecsLeft / 60 / 60 / 24 % 30.4368), weeks: Math.floor(this.totalSecsLeft / 60 / 60 / 24 / 7), weeksToMonth: Math.floor(this.totalSecsLeft / 60 / 60 / 24 / 7) % 4, months: Math.floor(this.totalSecsLeft / 60 / 60 / 24 / 30.4368), years: Math.abs(this.finalDate.getFullYear() - d.getFullYear()), totalDays: Math.floor(this.totalSecsLeft / 60 / 60 / 24), totalHours: Math.floor(this.totalSecsLeft / 60 / 60), totalMinutes: Math.floor(this.totalSecsLeft / 60), totalSeconds: this.totalSecsLeft }, this.options.elapse || 0 !== this.totalSecsLeft ? this.dispatchEvent("update") : (this.stop(), this.dispatchEvent("finish"))) }, dispatchEvent: function (b) { var c = a.Event(b + ".countdown"); c.finalDate = this.finalDate, c.elapsed = this.elapsed, c.offset = a.extend({}, this.offset), c.strftime = d(this.offset), this.$el.trigger(c) } }), a.fn.countdown = function () { var b = Array.prototype.slice.call(arguments, 0); return this.each(function () { var c = a(this).data("countdown-instance"); if (void 0 !== c) { var d = f[c], e = b[0]; j.prototype.hasOwnProperty(e) ? d[e].apply(d, b.slice(1)) : null === String(e).match(/^[$A-Z_][0-9A-Z_$]*$/i) ? (d.setFinalDate.call(d, e), d.start()) : a.error("Method %s does not exist on jQuery.countdown".replace(/\%s/gi, e)) } else new j(this, b[0], b[1]) }) } });</script>
+  <script>
+    window.onload = function () {
+      if (window.localStorage) {
+        var isDark = window.localStorage.getItem("dark");
+        if (isDark == 'true') {
+          document.body.classList.add("dark-mode");
+          document.getElementById("toggle-button").firstElementChild.checked = true;
+        }
+      }
+    }
+
+    window.onscroll = function (e) {
+
+      e.preventDefault();
+
+      let scroll = window.scrollY;
+
+      var Scroll = document.querySelector("#efec-scroll");
+      var ulone = document.querySelector("#ulone");
+      var ultwu = document.querySelector("#ultwu");
+      var logo = document.getElementById("logo");
+      var darkModeButton = document.getElementById("toggle-button").firstElementChild;
+
+      if (scroll > 50) {
+        if (darkModeButton.checked) {
+          Scroll.classList.add("bg-menu-light")
+        } else {
+          Scroll.classList.add("bg-menu");
+        }
+        // ulone.classList.add("nav-scroll");
+        // ultwu.classList.add("nav-scroll");
+        // logo.classList.add("logo");
+      } else {
+        Scroll.classList.remove("bg-menu");
+        Scroll.classList.remove("bg-menu-light");
+        // ulone.classList.remove("nav-scroll");
+        // ultwu.classList.remove("nav-scroll");
+        // logo.classList.remove("logo");
+      }
+    };
+  </script>
+  </script>
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+      integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+      crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+      integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+      crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+      integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+      crossorigin="anonymous"></script>
+  <script>
+      document.addEventListener('DOMContentLoaded', () => {
+          const voiceSearchBtn = document.getElementById('voiceSearchBtn');
+          const performSearchBtn = document.getElementById('performSearchBtn');
+          const transcription = document.getElementById('transcription');
+          const searchInput = document.getElementById('searchInput');
+
+          // Initialize Speech Recognition
+          const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+          const recognition = new SpeechRecognition();
+
+          recognition.continuous = false; // Stop automatically after one command
+          recognition.interimResults = false; // Only process final results
+          recognition.lang = 'en-US'; // Set language to English
+
+          // Start voice recognition on button click
+          voiceSearchBtn.addEventListener('click', () => {
+              transcription.textContent = "Listening...";
+              recognition.start();
+          });
+
+          // Process recognition result
+          recognition.onresult = (event) => {
+              const speechResult = event.results[0][0].transcript;
+              transcription.textContent = `You said: "${speechResult}"`;
+              searchInput.value = speechResult; // Populate the search input with the recognized text
+              // Redirect to the search results page
+              window.location.href = `/search?product_name=${encodeURIComponent(speechResult)}`;
+          };
+
+          recognition.onerror = (event) => {
+              transcription.textContent = `Error: ${event.error}`;
+          };
+      });
+  </script>
+  <script>
+    function addToCart(heartLink, product_data, e) {
+      if (e.target && e.target.classList && !e.target.classList.contains("clicked-heart")) {
+        e.target.classList.add("clicked-heart");
+      }
+      let post_data = new URLSearchParams();
+      // product_data = JSON.parse(product_data)
+      for (k in product_data)
+        post_data.append(k, product_data[k])
+      fetch("/add-wishlist-item", {
+        method: 'post',
+        body: post_data,
+      }).then(result => console.log(result)).catch(error => console.error(error))
+    }
+    var darkModeButton = document.getElementById("toggle-button");
+    darkModeButton.addEventListener("click", function () {
+      let scroll = window.scrollY;
+      var Scroll = document.querySelector("#efec-scroll");
+      if (darkModeButton.firstElementChild.checked) {
+        document.body.classList.add("dark-mode");
+        window.localStorage.setItem("dark", true);
+        if (scroll > 50) {
+          Scroll.classList.remove("bg-menu");
+          Scroll.classList.add("bg-menu-light");
+        }
+      } else {
+        document.body.classList.remove("dark-mode");
+        window.localStorage.setItem("dark", false);
+        if (scroll > 50) {
+          Scroll.classList.add("bg-menu");
+          Scroll.classList.remove("bg-menu-light");
+        }
+      }
+    })
+  </script>
+  <script>
+function changeCurrency() {
+    const selectedCurrency = document.getElementById('choice1').value;
+    
+    // Send an AJAX request to update the currency
+    fetch('/update_currency', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ currency: selectedCurrency }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Update the displayed prices
+        updatePrices(data.products);
+    });
+}
+
+function updatePrices(products) {
+    // Update the prices in the DOM
+    // This will depend on how you're displaying the products
+    // For example:
+    products.forEach(product => {
+        const priceElement = document.getElementById(`price-${product.id}`);
+        if (priceElement) {
+            priceElement.textContent = product.price;
+        }
+    });
+}
+
 </body>
+
 </html>

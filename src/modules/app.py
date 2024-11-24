@@ -16,9 +16,9 @@ from email.mime.multipart import MIMEMultipart
 from datetime import datetime, timedelta
 
 from .scraper import driver, filter, get_currency_rate, convert_currency
-from .features import create_user, check_user, db_check_user, db_create_user, wishlist_add_item, read_wishlist, remove_wishlist_item, share_wishlist
+from .features import create_user, check_user, db_check_user, db_create_user, wishlist_add_item, read_wishlist, remove_wishlist_item, share_wishlist, create_search_entry, get_user_searches_by_username, generate_product_recommendations
 from .config import Config
-from .models import db
+from .models import db #SearchEntry
 import secrets
 import email, smtplib, ssl
 
@@ -193,7 +193,8 @@ def login():
             session['login_otp'] = otp
             session['login_otp_time'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             session['pending_username'] = username
-            
+            session['username'] = username
+
             if send_otp_email(username, otp):
                 return render_template("./static/landing.html", show_otp=True)
             else:
@@ -311,12 +312,25 @@ def product_search(new_product="", sort=None, currency=None, num=None, min_price
 
         data = driver(product, currency, num, 0, False, None, True, sort, website)
 
+        username = session.get('username')
+        if username:  # Make sure the user is logged in
+            create_search_entry(username, product)
+
         if min_price is not None or max_price is not None or min_rating is not None:
             data = filter(data, min_price, max_price, min_rating)
         return render_template("./static/result.html", data=data, prod=product, total_pages=len(data)//20)
     except Exception as e:
         app.logger.error(f"Error during product search: {e}")
         return render_template("error.html", error=str(e)), 500
+
+@app.route('/search-history')
+def search_history():
+    username = session.get('username')
+    if not username:
+        return redirect(url_for('login'))  # Redirect to login if the username is not found in the session
+    searches = get_user_searches_by_username(username)
+    return render_template('./static/search_history.html', searches=searches)
+
 
 
 @app.route("/filter", methods=["POST", "GET"])
@@ -450,8 +464,35 @@ def export_csv():
 @app.route('/product_comparison')
 def product_comparison():
     return render_template('./static/product_comparison.html')
-    
-    
+
+@app.route('/product-recommendations')
+def product_recommendations():
+    username = session.get('username')
+    if not username:
+        return redirect(url_for('login'))
+
+    related_keywords = generate_product_recommendations(username)
+    if not related_keywords:
+        return render_template('recommendations.html', message="No recommendations found based on your searches.")
+
+    recommendations = {}
+    for keyword in related_keywords:
+        recommendations[keyword] = perform_product_search(keyword, currency="USD", num=3)
+
+    return render_template('./static/recommendations.html', recommendations=recommendations)
+
+def perform_product_search(product, sort=None, currency=None, num=None, min_price=None, max_price=None, min_rating=None, website=None):
+    print(f"The product is {product}")
+    try:
+        data = driver(product, currency, num, 0, False, None, True, sort, website)
+        if min_price is not None or max_price is not None or min_rating is not None:
+            data = filter(data, min_price, max_price, min_rating)
+        return data
+    except Exception as e:
+        app.logger.error(f"Error during product search: {e}")
+        return None 
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)

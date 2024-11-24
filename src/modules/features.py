@@ -15,7 +15,9 @@ import smtplib
 from pathlib import Path
 from .config import Config
 import bcrypt
-from .models import db, WishlistItem, Wishlist, User
+from .models import db, WishlistItem, Wishlist, User, SearchEntry
+import requests
+from .scraper import driver, filter
 
 from . import scraper
 from email.message import EmailMessage
@@ -254,3 +256,57 @@ def update_price(link,website,price):
         if scraped_price:
             updated_price = scraper.getCurrency(currency,scraped_price) if currency is not None else scraped_price      
     return updated_price
+
+def create_search_entry(username, search_term):
+    user = User.query.filter_by(username=username).first()
+    if user:
+        new_search_entry = SearchEntry(user_id=user.id, search_term=search_term)
+        db.session.add(new_search_entry)
+        db.session.commit()
+
+
+
+def get_user_searches_by_username(username):
+    user = User.query.filter_by(username=username).first()
+    if user:
+        return user.searches
+    return []
+
+def get_related_products_from_chatgpt(search_term):
+    openai_api_key = os.getenv('OPENAI_API_KEY') 
+    api_url = "https://api.openai.com/v1/chat/completions"
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {openai_api_key}"
+    }
+    prompt = f"List three related product titles for the search term '{search_term}', each on a new line. Limit the product titles to three-four words."
+    payload = {
+        "model": "gpt-3.5-turbo",
+        "messages": [{"role": "system", "content": prompt}]
+    }
+
+    response = requests.post(api_url, json=payload, headers=headers)
+    if response.status_code == 200:
+        response_data = response.json()
+        suggestions = response_data['choices'][0]['message']['content'].strip().split('\n')
+        clean_suggestions = [s.strip().split('. ')[-1] for s in suggestions if s.strip()]
+        return clean_suggestions
+    else:
+        print("Failed to get suggestions:", response.text)
+        return []
+
+def generate_product_recommendations(username):
+    user = User.query.filter_by(username=username).first()
+    if not user or not user.searches:
+        return []
+
+    last_search = user.searches[-1].search_term
+
+    related_products = get_related_products_from_chatgpt(last_search)
+    return related_products[:3]  
+
+
+def search_products(query):
+    currency = 'USD'  
+    num = 3  
+    return driver(query, currency, num, df_flag=0, ui=True)
